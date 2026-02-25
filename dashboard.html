@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>WEO · nomp — Command Centre</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:ital,wght@0,300;0,400;0,500;1,300&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg:         #f0f2f5;
+    --surface:    #ffffff;
+    --surface2:   #f8f9fa;
+    --border:     #e5e8ed;
+    --border2:    #d0d5dd;
+    --text:       #111827;
+    --muted:      #6b7280;
+    --faint:      #9ca3af;
+    --teal:       #18a98a;
+    --purple:     #6d5ce7;
+    --teal-dim:   rgba(24,169,138,0.08);
+    --purple-dim: rgba(109,92,231,0.08);
+    --teal-mid:   rgba(24,169,138,0.2);
+    --purple-mid: rgba(109,92,231,0.2);
+  }
+
+  html, body { height: 100%; background: var(--bg); color: var(--text); font-family: 'DM Sans', sans-serif; font-size: 13px; line-height: 1.5; overflow: hidden; }
+
+  .shell { display: grid; grid-template-rows: 52px 1fr 50px; height: 100vh; }
+
+  /* TOP BAR */
+  .topbar { display: flex; align-items: center; justify-content: space-between; padding: 0 20px; background: var(--surface); border-bottom: 1px solid var(--border); gap: 16px; }
+  .topbar-left { display: flex; align-items: center; gap: 14px; }
+  .nomp-logo { height: 22px; width: auto; }
+  .brand-divider { width: 1px; height: 18px; background: var(--border2); }
+  .brand-label { font-family: 'DM Mono', monospace; font-size: 10px; color: var(--muted); letter-spacing: 0.09em; text-transform: uppercase; }
+
+  .focus-pill { display: flex; align-items: center; gap: 8px; background: var(--surface2); border: 1px solid var(--border2); border-radius: 5px; padding: 5px 12px; transition: border-color 0.2s; }
+  .focus-pill:focus-within { border-color: var(--teal); }
+  .focus-label { font-family: 'DM Mono', monospace; font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.07em; white-space: nowrap; }
+  #focus-text { font-size: 12px; border: none; background: transparent; outline: none; font-family: 'DM Sans', sans-serif; color: var(--text); min-width: 200px; }
+  #focus-text::placeholder { color: var(--faint); font-style: italic; }
+
+  #clock { font-family: 'DM Mono', monospace; font-size: 14px; color: var(--teal); letter-spacing: 0.04em; min-width: 65px; text-align: right; }
+  #dateline { font-family: 'DM Mono', monospace; font-size: 11px; color: var(--muted); white-space: nowrap; }
+
+  /* MAIN */
+  .main { display: grid; grid-template-columns: 268px 1fr 272px; overflow: hidden; }
+
+  .col { display: flex; flex-direction: column; overflow: hidden; border-right: 1px solid var(--border); background: var(--bg); }
+  .col:last-child { border-right: none; }
+
+  .col-header { display: flex; align-items: center; justify-content: space-between; padding: 9px 14px 8px; border-bottom: 1px solid var(--border); background: var(--surface); flex-shrink: 0; }
+  .col-title { font-family: 'DM Mono', monospace; font-size: 10px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.1em; color: var(--muted); }
+
+  .col-body { flex: 1; overflow-y: auto; scrollbar-width: thin; scrollbar-color: var(--border2) transparent; }
+  .col-body::-webkit-scrollbar { width: 4px; }
+  .col-body::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 2px; }
+
+  /* CALENDAR */
+  .cal-toggle { display: flex; gap: 3px; }
+  .cal-btn { font-family: 'DM Mono', monospace; font-size: 9px; letter-spacing: 0.07em; text-transform: uppercase; padding: 3px 8px; border: 1px solid var(--border2); border-radius: 3px; background: transparent; color: var(--muted); cursor: pointer; transition: all 0.15s; }
+  .cal-btn.active, .cal-btn:hover { background: var(--teal-dim); border-color: var(--teal); color: var(--teal); }
+
+  .cal-body { padding: 14px; }
+  .cal-section-label { font-family: 'DM Mono', monospace; font-size: 9px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.1em; color: var(--muted); margin-bottom: 8px; }
+
+  .cal-view-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 6px; margin-bottom: 14px; }
+  .cal-view-btn { display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 11px 8px; background: var(--surface); border: 1px solid var(--border2); border-radius: 6px; text-decoration: none; color: var(--text); transition: all 0.15s; text-align: center; }
+  .cal-view-btn:hover { border-color: var(--teal); background: var(--teal-dim); }
+  .cal-view-btn .vi { font-size: 20px; }
+  .cal-view-btn .vl { font-size: 11px; font-weight: 500; }
+  .cal-view-btn .vs { font-family: 'DM Mono', monospace; font-size: 9px; color: var(--muted); }
+
+  .cal-action { display: flex; align-items: center; justify-content: space-between; padding: 10px 14px; background: var(--surface); border: 1px solid var(--border2); border-left: 3px solid var(--teal); border-radius: 5px; text-decoration: none; color: var(--text); margin-bottom: 6px; transition: all 0.15s; }
+  .cal-action:hover { border-color: var(--teal); background: var(--teal-dim); border-left-color: var(--teal); }
+  .cal-action.purple { border-left-color: var(--purple); }
+  .cal-action.purple:hover { border-color: var(--purple); background: var(--purple-dim); border-left-color: var(--purple); }
+  .cal-action-label { font-size: 12px; font-weight: 500; }
+  .cal-action-arrow { font-family: 'DM Mono', monospace; font-size: 11px; color: var(--muted); }
+
+  .cal-note { font-family: 'DM Mono', monospace; font-size: 10px; color: var(--muted); line-height: 1.8; padding: 10px 12px; background: var(--surface); border: 1px solid var(--border); border-radius: 4px; margin-top: 10px; }
+
+  /* SHEETS */
+  .sheet-tabs { display: flex; border-bottom: 1px solid var(--border); overflow-x: auto; scrollbar-width: none; flex-shrink: 0; background: var(--surface); }
+  .sheet-tabs::-webkit-scrollbar { display: none; }
+  .sheet-tab { font-family: 'DM Mono', monospace; font-size: 10px; letter-spacing: 0.05em; text-transform: uppercase; padding: 8px 14px; border: none; border-right: 1px solid var(--border); background: transparent; color: var(--muted); cursor: pointer; white-space: nowrap; transition: all 0.15s; flex-shrink: 0; }
+  .sheet-tab:hover { color: var(--text); background: var(--surface2); }
+  .sheet-tab.active { color: var(--teal); background: var(--surface); border-bottom: 2px solid var(--teal); margin-bottom: -1px; }
+
+  .sheet-content { flex: 1; position: relative; overflow: hidden; }
+  .sheet-pane { display: none; position: absolute; inset: 0; align-items: center; justify-content: center; flex-direction: column; gap: 12px; padding: 28px; text-align: center; }
+  .sheet-pane.visible { display: flex; }
+  .sheet-icon { font-size: 38px; opacity: 0.2; }
+  .sheet-name { font-weight: 600; font-size: 14px; color: var(--text); }
+  .sheet-desc { font-size: 12px; color: var(--muted); line-height: 1.6; max-width: 340px; }
+  .sheet-open-link { display: inline-flex; align-items: center; gap: 5px; padding: 9px 20px; background: var(--surface); border: 1px solid var(--border2); border-radius: 5px; color: var(--teal); text-decoration: none; font-family: 'DM Mono', monospace; font-size: 11px; font-weight: 500; transition: all 0.15s; margin-top: 4px; }
+  .sheet-open-link:hover { background: var(--teal-dim); border-color: var(--teal); }
+
+  /* AGENT */
+  .agent-status { display: flex; align-items: center; gap: 6px; }
+  .status-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--faint); }
+  .status-dot.ready { background: var(--teal); box-shadow: 0 0 5px rgba(24,169,138,0.4); }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.2} }
+  .status-label { font-family: 'DM Mono', monospace; font-size: 9px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.08em; }
+
+  .agent-body { padding: 12px; display: flex; flex-direction: column; gap: 8px; }
+
+  .agent-card { background: var(--surface); border: 1px solid var(--border); border-radius: 6px; overflow: hidden; }
+  .agent-card-header { display: flex; align-items: center; justify-content: space-between; padding: 8px 12px; border-bottom: 1px solid var(--border); background: var(--surface2); }
+  .agent-card-title { font-family: 'DM Mono', monospace; font-size: 9px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.1em; color: var(--muted); }
+  .badge { font-family: 'DM Mono', monospace; font-size: 9px; padding: 2px 7px; border-radius: 3px; }
+  .badge.teal { background: var(--teal-dim); color: var(--teal); border: 1px solid var(--teal-mid); }
+  .badge.purple { background: var(--purple-dim); color: var(--purple); border: 1px solid var(--purple-mid); }
+  .badge.grey { background: var(--surface2); color: var(--faint); border: 1px solid var(--border2); }
+  .agent-card-body { padding: 10px 12px; }
+
+  .empty-state { text-align: center; padding: 12px 8px; color: var(--muted); }
+  .empty-state .ei { font-size: 20px; opacity: 0.3; margin-bottom: 6px; }
+  .empty-state p { font-family: 'DM Mono', monospace; font-size: 10px; line-height: 1.8; }
+
+  .briefing-input { margin-top: 10px; width: 100%; background: var(--surface2); border: 1px solid var(--border2); border-radius: 4px; padding: 7px 10px; color: var(--text); font-family: 'DM Mono', monospace; font-size: 10px; outline: none; transition: border-color 0.15s; }
+  .briefing-input:focus { border-color: var(--teal); }
+  .briefing-input::placeholder { color: var(--faint); }
+
+  .output-row { display: flex; gap: 8px; padding: 6px 0; border-bottom: 1px solid var(--border); }
+  .output-row:last-child { border-bottom: none; }
+  .odot { width: 5px; height: 5px; border-radius: 50%; flex-shrink: 0; margin-top: 5px; }
+  .odot.t { background: var(--teal); }
+  .odot.p { background: var(--purple); }
+  .output-text { font-size: 12px; line-height: 1.5; }
+  .output-link { display: inline-flex; align-items: center; gap: 3px; font-family: 'DM Mono', monospace; font-size: 10px; color: var(--teal); text-decoration: none; }
+  .output-link:hover { text-decoration: underline; }
+
+  .attio-card { display: flex; align-items: center; gap: 10px; padding: 9px 12px; background: var(--surface); border: 1px solid var(--border); border-radius: 6px; text-decoration: none; color: var(--text); transition: all 0.15s; }
+  .attio-card:hover { border-color: var(--purple); background: var(--purple-dim); }
+  .attio-icon-box { width: 22px; height: 22px; background: var(--purple); border-radius: 4px; display: flex; align-items: center; justify-content: center; font-size: 11px; color: white; font-weight: 700; flex-shrink: 0; }
+  .attio-name { font-size: 12px; font-weight: 500; }
+  .attio-sub { font-family: 'DM Mono', monospace; font-size: 10px; color: var(--muted); margin-left: auto; }
+
+  .notes-area { width: 100%; min-height: 80px; background: transparent; border: none; outline: none; resize: vertical; color: var(--text); font-family: 'DM Sans', sans-serif; font-size: 12px; line-height: 1.6; }
+  .notes-area::placeholder { color: var(--faint); font-style: italic; }
+
+  /* BOTTOM */
+  .bottombar { display: flex; align-items: center; padding: 0 16px; gap: 5px; border-top: 1px solid var(--border); background: var(--surface); overflow-x: auto; scrollbar-width: none; }
+  .bottombar::-webkit-scrollbar { display: none; }
+  .bar-label { font-family: 'DM Mono', monospace; font-size: 9px; text-transform: uppercase; letter-spacing: 0.09em; color: var(--faint); white-space: nowrap; margin: 0 3px; }
+  .chip { display: flex; align-items: center; gap: 5px; padding: 5px 10px; border: 1px solid var(--border2); border-radius: 4px; text-decoration: none; color: var(--muted); font-family: 'DM Mono', monospace; font-size: 10px; white-space: nowrap; flex-shrink: 0; transition: all 0.15s; }
+  .chip .dot { width: 5px; height: 5px; border-radius: 50%; background: currentColor; opacity: 0.5; }
+  .chip.t:hover { color: var(--teal); border-color: var(--teal); background: var(--teal-dim); }
+  .chip.p:hover { color: var(--purple); border-color: var(--purple); background: var(--purple-dim); }
+  .chip.dim { opacity: 0.38; pointer-events: none; }
+  .sep { width: 1px; height: 20px; background: var(--border); flex-shrink: 0; margin: 0 3px; }
+</style>
+</head>
+<body>
+<div class="shell">
+
+  <!-- TOP BAR -->
+  <header class="topbar">
+    <div class="topbar-left">
+      <svg class="nomp-logo" viewBox="73 63 230 154" xmlns="http://www.w3.org/2000/svg">
+        <clipPath id="ca"><path d="M149.355 63.633h152.25v152.25h-152.25z"/></clipPath>
+        <clipPath id="cb"><path d="M73.063 63.633h152.25v152.25H73.063z"/></clipPath>
+        <mask id="cm"><rect x="-37.5" width="450" fill="#fff" y="-37.5" height="450" fill-opacity=".51"/></mask>
+        <clipPath id="cd"><rect x="0" width="154" y="0" height="154"/></clipPath>
+        <clipPath id="ce"><path d="M.355.633h152.25v152.25H.355z"/></clipPath>
+        <g clip-path="url(#ca)"><path fill="#47d1b1" d="M225.645 216.211c-42.067 0-76.29-34.223-76.29-76.29 0-42.066 34.223-76.288 76.29-76.288 42.066 0 76.288 34.222 76.288 76.289 0 42.066-34.222 76.289-76.288 76.289zm0-120.02c-24.113 0-43.73 19.617-43.73 43.73s19.617 43.73 43.73 43.73c24.113 0 43.73-19.617 43.73-43.73s-19.617-43.73-43.73-43.73z"/></g>
+        <g clip-path="url(#cb)"><path fill="#8a7cff" d="M149.352 216.211c-42.067 0-76.29-34.223-76.29-76.29 0-42.066 34.223-76.288 76.29-76.288 42.066 0 76.288 34.222 76.288 76.289 0 42.066-34.222 76.289-76.288 76.289zm0-120.02c-24.113 0-43.73 19.617-43.73 43.73s19.617 43.73 43.73 43.73c24.113 0 43.73-19.617 43.73-43.73s-19.617-43.73-43.73-43.73z"/></g>
+        <g mask="url(#cm)"><g transform="translate(149 63)"><g clip-path="url(#cd)"><g clip-path="url(#ce)"><path fill="#47d1b1" d="M76.645 153.211c-42.067 0-76.29-34.223-76.29-76.29 0-42.066 34.223-76.288 76.29-76.288 42.066 0 76.288 34.222 76.288 76.289 0 42.066-34.222 76.289-76.288 76.289zm0-120.02c-24.113 0-43.73 19.617-43.73 43.73s19.617 43.73 43.73 43.73c24.113 0 43.73-19.617 43.73-43.73s-19.617-43.73-43.73-43.73z"/></g></g></g></g>
+      </svg>
+      <div class="brand-divider"></div>
+      <span class="brand-label">Command Centre</span>
+    </div>
+
+    <div class="focus-pill">
+      <span class="focus-label">Focus →</span>
+      <input type="text" id="focus-text" placeholder="What's the priority today?" maxlength="90">
+    </div>
+
+    <div style="display:flex;align-items:center;gap:16px;">
+      <span id="dateline"></span>
+      <span id="clock"></span>
+    </div>
+  </header>
+
+  <!-- MAIN -->
+  <main class="main">
+
+    <!-- LEFT: Calendar -->
+    <div class="col">
+      <div class="col-header">
+        <span class="col-title">Calendar</span>
+        <div class="cal-toggle">
+          <button class="cal-btn active" onclick="highlightCalBtn(this)">Day</button>
+          <button class="cal-btn" onclick="highlightCalBtn(this)">Week</button>
+          <button class="cal-btn" onclick="highlightCalBtn(this)">Month</button>
+        </div>
+      </div>
+      <div class="col-body">
+        <div class="cal-body">
+          <p class="cal-section-label">Open Google Calendar</p>
+          <div class="cal-view-grid">
+            <a id="cal-day" href="#" target="_blank" class="cal-view-btn">
+              <span class="vi">📅</span><span class="vl">Day</span><span class="vs">Today</span>
+            </a>
+            <a id="cal-week" href="#" target="_blank" class="cal-view-btn">
+              <span class="vi">🗓</span><span class="vl">Week</span><span class="vs">This week</span>
+            </a>
+            <a id="cal-month" href="#" target="_blank" class="cal-view-btn">
+              <span class="vi">📆</span><span class="vl">Month</span><span class="vs">Overview</span>
+            </a>
+          </div>
+
+          <p class="cal-section-label" style="margin-top:14px;">Actions</p>
+          <a href="https://calendar.google.com/calendar/r/eventedit" target="_blank" class="cal-action">
+            <span class="cal-action-label">＋ New event</span>
+            <span class="cal-action-arrow">↗</span>
+          </a>
+          <a href="https://calendar.google.com/calendar/r/search" target="_blank" class="cal-action purple">
+            <span class="cal-action-label">🔍 Search events</span>
+            <span class="cal-action-arrow">↗</span>
+          </a>
+
+          <div class="cal-note">
+            All 3 calendars open together in Google Calendar,
+            colour-coded as normal.<br><br>
+            Once Make.com is live, today's events will also
+            appear summarised in the Agent Output panel →
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- CENTRE: Documents -->
+    <div class="col">
+      <div class="col-header">
+        <span class="col-title">Documents</span>
+      </div>
+      <div class="sheet-tabs" id="sheet-tabs"></div>
+      <div class="sheet-content" id="sheet-content"></div>
+    </div>
+
+    <!-- RIGHT: Agent Output -->
+    <div class="col">
+      <div class="col-header">
+        <span class="col-title">Agent Output</span>
+        <div class="agent-status">
+          <div class="status-dot ready"></div>
+          <span class="status-label">Ready</span>
+        </div>
+      </div>
+      <div class="col-body">
+        <div class="agent-body">
+
+          <a href="https://app.attio.com/wise-eyes-open/home" target="_blank" class="attio-card">
+            <div class="attio-icon-box">A</div>
+            <span class="attio-name">Attio CRM</span>
+            <span class="attio-sub">Open ↗</span>
+          </a>
+
+          <div class="agent-card">
+            <div class="agent-card-header">
+              <span class="agent-card-title">Morning Briefing</span>
+              <span class="badge grey" id="briefing-badge">Pending</span>
+            </div>
+            <div class="agent-card-body" id="briefing-body">
+              <div class="empty-state">
+                <div class="ei">⚡</div>
+                <p>Today's briefing will appear here<br>once Make.com runs at 5am.<br><br>Or paste a doc link to pin it.</p>
+              </div>
+              <input class="briefing-input" id="briefing-url"
+                placeholder="Paste briefing doc link and press Enter…"
+                onkeydown="if(event.key==='Enter'){pinBriefing(this.value)}">
+            </div>
+          </div>
+
+          <div class="agent-card">
+            <div class="agent-card-header">
+              <span class="agent-card-title">Content Drafts</span>
+              <span class="badge purple">0 ready</span>
+            </div>
+            <div class="agent-card-body">
+              <div class="empty-state">
+                <p>Blog drafts, social post options<br>and newsletter sections will<br>appear here each morning.</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="agent-card">
+            <div class="agent-card-header">
+              <span class="agent-card-title">Outreach Queue</span>
+              <span class="badge teal">0 drafted</span>
+            </div>
+            <div class="agent-card-body">
+              <div class="empty-state">
+                <p>Prepared outreach messages<br>ready for your review<br>before sending.</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="agent-card">
+            <div class="agent-card-header">
+              <span class="agent-card-title">Day Notes</span>
+            </div>
+            <div class="agent-card-body">
+              <textarea id="day-notes" class="notes-area" placeholder="Notes, decisions, blockers…"></textarea>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- BOTTOM STRIP -->
+  <footer class="bottombar">
+    <span class="bar-label">Sites</span>
+    <a href="https://www.nomp.ch/" target="_blank" class="chip t"><div class="dot"></div>nomp.ch</a>
+    <a href="https://www.wiseeyesopen.com/" target="_blank" class="chip p"><div class="dot"></div>WEO</a>
+    <div class="sep"></div>
+    <span class="bar-label">nomp</span>
+    <a href="https://www.facebook.com/profile.php?id=61578211947144" target="_blank" class="chip t"><div class="dot"></div>Facebook</a>
+    <a href="#" class="chip t dim" id="nomp-ig"><div class="dot"></div>Instagram</a>
+    <div class="sep"></div>
+    <span class="bar-label">WEO</span>
+    <a href="https://www.facebook.com/wiseeyesopen/" target="_blank" class="chip p"><div class="dot"></div>Facebook</a>
+    <a href="#" class="chip p dim" id="weo-ig"><div class="dot"></div>Instagram</a>
+    <a href="https://x.com/Ianwiseeyesopen" target="_blank" class="chip p"><div class="dot"></div>X</a>
+    <a href="#" class="chip p dim" id="weo-li"><div class="dot"></div>LinkedIn</a>
+    <div class="sep"></div>
+    <a href="https://app.attio.com/wise-eyes-open/home" target="_blank" class="chip p"><div class="dot"></div>Attio</a>
+  </footer>
+
+</div>
+<script>
+// CLOCK
+function tick() {
+  const n = new Date(), p = v => String(v).padStart(2,'0');
+  document.getElementById('clock').textContent = `${p(n.getHours())}:${p(n.getMinutes())}:${p(n.getSeconds())}`;
+  const days=['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+  const months=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  document.getElementById('dateline').textContent = `${days[n.getDay()]} ${n.getDate()} ${months[n.getMonth()]} ${n.getFullYear()}`;
+}
+setInterval(tick,1000); tick();
+
+// CALENDAR - all 3 sources merged into single Google Calendar URL
+const SRCS = 'src=iainswise%40gmail.com&src=834f67a3cdf3f59449839677230897aed3642630c10c8f87be699c0ae466008c%40group.calendar.google.com&src=43c936510a66711f99062eab2ce4e630e351252b8316be5536d8a9ad077f3304%40group.calendar.google.com';
+document.getElementById('cal-day').href   = `https://calendar.google.com/calendar/r/day?${SRCS}`;
+document.getElementById('cal-week').href  = `https://calendar.google.com/calendar/r/week?${SRCS}`;
+document.getElementById('cal-month').href = `https://calendar.google.com/calendar/r/month?${SRCS}`;
+
+function highlightCalBtn(btn) {
+  document.querySelectorAll('.cal-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+}
+
+// SHEETS
+const SHEETS = [
+  { label:'GTM Overview',    url:'https://docs.google.com/spreadsheets/d/1mWwnAv2dv9ycRE8njUZ8QY5XH6iVzNdnKKrD7CIZIuQ/edit?gid=0#gid=0',           desc:'Quick reference overview of the full GTM strategy.' },
+  { label:'Mission Control', url:'https://docs.google.com/spreadsheets/d/1YDCEjmPZanFeXTYg-GlJGFVRMSc3UZWN/edit?gid=237830561#gid=237830561', desc:'Content strategy and actionable task management hub.' },
+  { label:'Biz Dev',         url:'https://docs.google.com/spreadsheets/d/1HnBjJDjUOcgcik1sgQrP5c7XCS3ifPFk/edit?gid=983834833#gid=983834833',  desc:'Business development contacts — influencers, prosumers and partners.' },
+  { label:'Cohorts',         url:'https://docs.google.com/spreadsheets/d/1feVL0SKZtuP8MjqwmlfWzmRc-WIAhcLZ/edit?gid=1999948096#gid=1999948096', desc:'Universities, companies and running clubs for nomp partnership outreach.' },
+  { label:'Timeline',        url:'https://docs.google.com/spreadsheets/d/1F8WQyeXqUOlAbDszLzxovOMPlZ5b2o_usPUNCb4Gmgk/edit?gid=1709744959#gid=1709744959', desc:'Project timeline — work in progress, for reference.' }
+];
+const tabsEl = document.getElementById('sheet-tabs');
+const contentEl = document.getElementById('sheet-content');
+SHEETS.forEach((s,i) => {
+  const btn = document.createElement('button');
+  btn.className = 'sheet-tab'+(i===0?' active':'');
+  btn.textContent = s.label;
+  btn.onclick = () => switchSheet(i);
+  tabsEl.appendChild(btn);
+  const pane = document.createElement('div');
+  pane.className = 'sheet-pane'+(i===0?' visible':'');
+  pane.id = `sp-${i}`;
+  pane.innerHTML = `<div class="sheet-icon">📊</div><div class="sheet-name">${s.label}</div><p class="sheet-desc">${s.desc}</p><a href="${s.url}" target="_blank" class="sheet-open-link">Open in Google Sheets ↗</a>`;
+  contentEl.appendChild(pane);
+});
+function switchSheet(i) {
+  document.querySelectorAll('.sheet-tab').forEach((t,j) => t.classList.toggle('active',j===i));
+  document.querySelectorAll('.sheet-pane').forEach((p,j) => p.classList.toggle('visible',j===i));
+}
+
+// BRIEFING PIN
+function pinBriefing(url) {
+  if (!url||!url.startsWith('http')) return;
+  document.getElementById('briefing-badge').textContent='Today';
+  document.getElementById('briefing-badge').className='badge teal';
+  document.getElementById('briefing-body').innerHTML=`<div class="output-row"><div class="odot t"></div><div><div class="output-text">Morning briefing ready</div><a href="${url}" target="_blank" class="output-link">Open briefing doc ↗</a></div></div>`;
+}
+
+// PERSIST
+const dk = new Date().toDateString();
+const fe = document.getElementById('focus-text'), ne = document.getElementById('day-notes');
+fe.value = sessionStorage.getItem('f_'+dk)||'';
+ne.value = sessionStorage.getItem('n_'+dk)||'';
+fe.addEventListener('input',()=>sessionStorage.setItem('f_'+dk,fe.value));
+ne.addEventListener('input',()=>sessionStorage.setItem('n_'+dk,ne.value));
+</script>
+</body>
+</html>
