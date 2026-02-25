@@ -1,0 +1,594 @@
+<!DOCTYPE html>
+<!-- saved from url=(0049)file:///C:/Users/iains/Downloads/dashboard_2.html -->
+<html lang="en"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>WEO · nomp — Command Centre</title>
+<link rel="preconnect" href="https://fonts.googleapis.com/">
+<link href="./WEO · nomp — Command Centrev2_files/css2" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg:         #f0f2f5;
+    --surface:    #ffffff;
+    --surface2:   #f8f9fa;
+    --border:     #e5e8ed;
+    --border2:    #d0d5dd;
+    --text:       #111827;
+    --muted:      #6b7280;
+    --faint:      #9ca3af;
+    --teal:       #18a98a;
+    --purple:     #6d5ce7;
+    --teal-dim:   rgba(24,169,138,0.08);
+    --purple-dim: rgba(109,92,231,0.08);
+    --teal-mid:   rgba(24,169,138,0.2);
+    --purple-mid: rgba(109,92,231,0.2);
+  }
+
+  html, body { height: 100%; background: var(--bg); color: var(--text); font-family: 'DM Sans', sans-serif; font-size: 13px; line-height: 1.5; overflow: hidden; }
+
+  .shell { display: grid; grid-template-rows: 52px 1fr 50px; height: 100vh; }
+
+  /* TOP BAR */
+  .topbar { display: flex; align-items: center; justify-content: space-between; padding: 0 20px; background: var(--surface); border-bottom: 1px solid var(--border); gap: 16px; }
+  .topbar-left { display: flex; align-items: center; gap: 14px; }
+  .nomp-logo { height: 22px; width: auto; }
+  .brand-divider { width: 1px; height: 18px; background: var(--border2); }
+  .brand-label { font-family: 'DM Mono', monospace; font-size: 10px; color: var(--muted); letter-spacing: 0.09em; text-transform: uppercase; }
+  .focus-pill { display: flex; align-items: center; gap: 8px; background: var(--surface2); border: 1px solid var(--border2); border-radius: 5px; padding: 5px 12px; transition: border-color 0.2s; }
+  .focus-pill:focus-within { border-color: var(--teal); }
+  .focus-label { font-family: 'DM Mono', monospace; font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.07em; white-space: nowrap; }
+  #focus-text { font-size: 12px; border: none; background: transparent; outline: none; font-family: 'DM Sans', sans-serif; color: var(--text); min-width: 200px; }
+  #focus-text::placeholder { color: var(--faint); font-style: italic; }
+  #clock { font-family: 'DM Mono', monospace; font-size: 14px; color: var(--teal); letter-spacing: 0.04em; min-width: 65px; text-align: right; }
+  #dateline { font-family: 'DM Mono', monospace; font-size: 11px; color: var(--muted); white-space: nowrap; }
+
+  /* MAIN */
+  .main { display: grid; grid-template-columns: 268px 1fr 272px; overflow: hidden; }
+  .col { display: flex; flex-direction: column; overflow: hidden; border-right: 1px solid var(--border); background: var(--bg); }
+  .col:last-child { border-right: none; }
+  .col-header { display: flex; align-items: center; justify-content: space-between; padding: 9px 14px 8px; border-bottom: 1px solid var(--border); background: var(--surface); flex-shrink: 0; }
+  .col-title { font-family: 'DM Mono', monospace; font-size: 10px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.1em; color: var(--muted); }
+  .col-body { flex: 1; overflow-y: auto; scrollbar-width: thin; scrollbar-color: var(--border2) transparent; }
+  .col-body::-webkit-scrollbar { width: 4px; }
+  .col-body::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 2px; }
+
+  /* CALENDAR */
+  .cal-toggle { display: flex; gap: 3px; }
+  .cal-btn { font-family: 'DM Mono', monospace; font-size: 9px; letter-spacing: 0.07em; text-transform: uppercase; padding: 3px 8px; border: 1px solid var(--border2); border-radius: 3px; background: transparent; color: var(--muted); cursor: pointer; transition: all 0.15s; }
+  .cal-btn.active, .cal-btn:hover { background: var(--teal-dim); border-color: var(--teal); color: var(--teal); }
+
+  .cal-body { padding: 12px; }
+
+  /* Mini calendar grid */
+  .mini-cal { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; overflow: hidden; margin-bottom: 12px; }
+  .mini-cal-header { display: flex; align-items: center; justify-content: space-between; padding: 10px 14px; border-bottom: 1px solid var(--border); background: var(--surface2); }
+  .mini-cal-month { font-size: 13px; font-weight: 600; color: var(--text); }
+  .mini-cal-nav { display: flex; gap: 4px; }
+  .mini-cal-nav button { width: 24px; height: 24px; border: 1px solid var(--border2); border-radius: 4px; background: var(--surface); color: var(--muted); cursor: pointer; font-size: 12px; display: flex; align-items: center; justify-content: center; transition: all 0.15s; }
+  .mini-cal-nav button:hover { border-color: var(--teal); color: var(--teal); }
+  .mini-cal-grid { padding: 8px; }
+  .mini-cal-days { display: grid; grid-template-columns: repeat(7,1fr); gap: 2px; margin-bottom: 4px; }
+  .mini-cal-day-label { font-family: 'DM Mono', monospace; font-size: 9px; color: var(--faint); text-align: center; padding: 3px 0; text-transform: uppercase; letter-spacing: 0.05em; }
+  .mini-cal-dates { display: grid; grid-template-columns: repeat(7,1fr); gap: 2px; }
+  .cal-date { font-size: 11px; text-align: center; padding: 4px 2px; border-radius: 4px; cursor: pointer; color: var(--muted); transition: all 0.12s; position: relative; }
+  .cal-date:hover { background: var(--teal-dim); color: var(--teal); }
+  .cal-date.today { background: var(--teal); color: white !important; font-weight: 600; }
+  .cal-date.other-month { color: var(--faint); }
+  .cal-date.selected { background: var(--teal-dim); color: var(--teal); font-weight: 600; }
+  .cal-date.has-events::after { content:''; position:absolute; bottom:1px; left:50%; transform:translateX(-50%); width:4px; height:4px; border-radius:50%; background: var(--purple); }
+  .cal-date.today.has-events::after { background: white; }
+
+  /* Events list */
+  .events-section-label { font-family: 'DM Mono', monospace; font-size: 9px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.1em; color: var(--muted); margin-bottom: 8px; }
+  .event-item { display: flex; gap: 10px; padding: 8px 10px; background: var(--surface); border: 1px solid var(--border); border-left: 3px solid var(--teal); border-radius: 5px; margin-bottom: 5px; }
+  .event-item.cal2 { border-left-color: var(--purple); }
+  .event-item.cal3 { border-left-color: #f59e0b; }
+  .event-item.allday { border-left-color: var(--faint); opacity: 0.8; }
+  .event-time { font-family: 'DM Mono', monospace; font-size: 10px; color: var(--muted); white-space: nowrap; min-width: 42px; padding-top: 1px; }
+  .event-name { font-size: 12px; color: var(--text); line-height: 1.4; }
+  .event-empty { font-family: 'DM Mono', monospace; font-size: 11px; color: var(--faint); text-align: center; padding: 16px 0; }
+
+  .cal-open-link { display: flex; align-items: center; justify-content: space-between; padding: 8px 12px; background: var(--surface); border: 1px solid var(--border2); border-radius: 5px; text-decoration: none; color: var(--muted); font-family: 'DM Mono', monospace; font-size: 10px; margin-top: 10px; transition: all 0.15s; }
+  .cal-open-link:hover { border-color: var(--teal); color: var(--teal); }
+
+  .cal-loading { font-family: 'DM Mono', monospace; font-size: 11px; color: var(--faint); text-align: center; padding: 20px 0; }
+
+  /* SHEETS */
+  .sheet-tabs { display: flex; border-bottom: 1px solid var(--border); overflow-x: auto; scrollbar-width: none; flex-shrink: 0; background: var(--surface); }
+  .sheet-tabs::-webkit-scrollbar { display: none; }
+  .sheet-tab { font-family: 'DM Mono', monospace; font-size: 10px; letter-spacing: 0.05em; text-transform: uppercase; padding: 8px 14px; border: none; border-right: 1px solid var(--border); background: transparent; color: var(--muted); cursor: pointer; white-space: nowrap; transition: all 0.15s; flex-shrink: 0; }
+  .sheet-tab:hover { color: var(--text); background: var(--surface2); }
+  .sheet-tab.active { color: var(--teal); background: var(--surface); border-bottom: 2px solid var(--teal); margin-bottom: -1px; }
+  .sheet-content { flex: 1; position: relative; overflow: hidden; }
+  .sheet-pane { display: none; position: absolute; inset: 0; align-items: center; justify-content: center; flex-direction: column; gap: 12px; padding: 28px; text-align: center; }
+  .sheet-pane.visible { display: flex; }
+  .sheet-icon { font-size: 38px; opacity: 0.2; }
+  .sheet-name { font-weight: 600; font-size: 14px; color: var(--text); }
+  .sheet-desc { font-size: 12px; color: var(--muted); line-height: 1.6; max-width: 340px; }
+  .sheet-open-link { display: inline-flex; align-items: center; gap: 5px; padding: 9px 20px; background: var(--surface); border: 1px solid var(--border2); border-radius: 5px; color: var(--teal); text-decoration: none; font-family: 'DM Mono', monospace; font-size: 11px; font-weight: 500; transition: all 0.15s; margin-top: 4px; }
+  .sheet-open-link:hover { background: var(--teal-dim); border-color: var(--teal); }
+
+  /* AGENT */
+  .agent-status { display: flex; align-items: center; gap: 6px; }
+  .status-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--faint); }
+  .status-dot.ready { background: var(--teal); box-shadow: 0 0 5px rgba(24,169,138,0.4); }
+  .status-label { font-family: 'DM Mono', monospace; font-size: 9px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.08em; }
+  .agent-body { padding: 12px; display: flex; flex-direction: column; gap: 8px; }
+  .agent-card { background: var(--surface); border: 1px solid var(--border); border-radius: 6px; overflow: hidden; }
+  .agent-card-header { display: flex; align-items: center; justify-content: space-between; padding: 8px 12px; border-bottom: 1px solid var(--border); background: var(--surface2); }
+  .agent-card-title { font-family: 'DM Mono', monospace; font-size: 9px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.1em; color: var(--muted); }
+  .badge { font-family: 'DM Mono', monospace; font-size: 9px; padding: 2px 7px; border-radius: 3px; }
+  .badge.teal { background: var(--teal-dim); color: var(--teal); border: 1px solid var(--teal-mid); }
+  .badge.purple { background: var(--purple-dim); color: var(--purple); border: 1px solid var(--purple-mid); }
+  .badge.grey { background: var(--surface2); color: var(--faint); border: 1px solid var(--border2); }
+  .agent-card-body { padding: 10px 12px; }
+  .empty-state { text-align: center; padding: 12px 8px; color: var(--muted); }
+  .empty-state .ei { font-size: 20px; opacity: 0.3; margin-bottom: 6px; }
+  .empty-state p { font-family: 'DM Mono', monospace; font-size: 10px; line-height: 1.8; }
+  .briefing-input { margin-top: 10px; width: 100%; background: var(--surface2); border: 1px solid var(--border2); border-radius: 4px; padding: 7px 10px; color: var(--text); font-family: 'DM Mono', monospace; font-size: 10px; outline: none; transition: border-color 0.15s; }
+  .briefing-input:focus { border-color: var(--teal); }
+  .briefing-input::placeholder { color: var(--faint); }
+  .output-row { display: flex; gap: 8px; padding: 6px 0; border-bottom: 1px solid var(--border); }
+  .output-row:last-child { border-bottom: none; }
+  .odot { width: 5px; height: 5px; border-radius: 50%; flex-shrink: 0; margin-top: 5px; }
+  .odot.t { background: var(--teal); } .odot.p { background: var(--purple); }
+  .output-text { font-size: 12px; line-height: 1.5; }
+  .output-link { display: inline-flex; align-items: center; gap: 3px; font-family: 'DM Mono', monospace; font-size: 10px; color: var(--teal); text-decoration: none; }
+  .output-link:hover { text-decoration: underline; }
+  .attio-card { display: flex; align-items: center; gap: 10px; padding: 9px 12px; background: var(--surface); border: 1px solid var(--border); border-radius: 6px; text-decoration: none; color: var(--text); transition: all 0.15s; }
+  .attio-card:hover { border-color: var(--purple); background: var(--purple-dim); }
+  .attio-icon-box { width: 22px; height: 22px; background: var(--purple); border-radius: 4px; display: flex; align-items: center; justify-content: center; font-size: 11px; color: white; font-weight: 700; flex-shrink: 0; }
+  .attio-name { font-size: 12px; font-weight: 500; }
+  .attio-sub { font-family: 'DM Mono', monospace; font-size: 10px; color: var(--muted); margin-left: auto; }
+  .notes-area { width: 100%; min-height: 80px; background: transparent; border: none; outline: none; resize: vertical; color: var(--text); font-family: 'DM Sans', sans-serif; font-size: 12px; line-height: 1.6; }
+  .notes-area::placeholder { color: var(--faint); font-style: italic; }
+
+  /* BOTTOM */
+  .bottombar { display: flex; align-items: center; padding: 0 16px; gap: 5px; border-top: 1px solid var(--border); background: var(--surface); overflow-x: auto; scrollbar-width: none; }
+  .bottombar::-webkit-scrollbar { display: none; }
+  .bar-label { font-family: 'DM Mono', monospace; font-size: 9px; text-transform: uppercase; letter-spacing: 0.09em; color: var(--faint); white-space: nowrap; margin: 0 3px; }
+  .chip { display: flex; align-items: center; gap: 5px; padding: 5px 10px; border: 1px solid var(--border2); border-radius: 4px; text-decoration: none; color: var(--muted); font-family: 'DM Mono', monospace; font-size: 10px; white-space: nowrap; flex-shrink: 0; transition: all 0.15s; }
+  .chip .dot { width: 5px; height: 5px; border-radius: 50%; background: currentColor; opacity: 0.5; }
+  .chip.t:hover { color: var(--teal); border-color: var(--teal); background: var(--teal-dim); }
+  .chip.p:hover { color: var(--purple); border-color: var(--purple); background: var(--purple-dim); }
+  .chip.dim { opacity: 0.38; pointer-events: none; }
+  .sep { width: 1px; height: 20px; background: var(--border); flex-shrink: 0; margin: 0 3px; }
+</style>
+</head>
+<body>
+<div class="shell">
+
+  <!-- TOP BAR -->
+  <header class="topbar">
+    <div class="topbar-left">
+      <svg class="nomp-logo" viewBox="73 63 230 154" xmlns="http://www.w3.org/2000/svg">
+        <clippath id="ca"><path d="M149.355 63.633h152.25v152.25h-152.25z"></path></clippath>
+        <clippath id="cb"><path d="M73.063 63.633h152.25v152.25H73.063z"></path></clippath>
+        <mask id="cm"><rect x="-37.5" width="450" fill="#fff" y="-37.5" height="450" fill-opacity=".51"></rect></mask>
+        <clippath id="cd"><rect x="0" width="154" y="0" height="154"></rect></clippath>
+        <clippath id="ce"><path d="M.355.633h152.25v152.25H.355z"></path></clippath>
+        <g clip-path="url(#ca)"><path fill="#47d1b1" d="M225.645 216.211c-42.067 0-76.29-34.223-76.29-76.29 0-42.066 34.223-76.288 76.29-76.288 42.066 0 76.288 34.222 76.288 76.289 0 42.066-34.222 76.289-76.288 76.289zm0-120.02c-24.113 0-43.73 19.617-43.73 43.73s19.617 43.73 43.73 43.73c24.113 0 43.73-19.617 43.73-43.73s-19.617-43.73-43.73-43.73z"></path></g>
+        <g clip-path="url(#cb)"><path fill="#8a7cff" d="M149.352 216.211c-42.067 0-76.29-34.223-76.29-76.29 0-42.066 34.223-76.288 76.29-76.288 42.066 0 76.288 34.222 76.288 76.289 0 42.066-34.222 76.289-76.288 76.289zm0-120.02c-24.113 0-43.73 19.617-43.73 43.73s19.617 43.73 43.73 43.73c24.113 0 43.73-19.617 43.73-43.73s-19.617-43.73-43.73-43.73z"></path></g>
+        <g mask="url(#cm)"><g transform="translate(149 63)"><g clip-path="url(#cd)"><g clip-path="url(#ce)"><path fill="#47d1b1" d="M76.645 153.211c-42.067 0-76.29-34.223-76.29-76.29 0-42.066 34.223-76.288 76.29-76.288 42.066 0 76.288 34.222 76.288 76.289 0 42.066-34.222 76.289-76.288 76.289zm0-120.02c-24.113 0-43.73 19.617-43.73 43.73s19.617 43.73 43.73 43.73c24.113 0 43.73-19.617 43.73-43.73s-19.617-43.73-43.73-43.73z"></path></g></g></g></g>
+      </svg>
+      <div class="brand-divider"></div>
+      <span class="brand-label">Command Centre</span>
+    </div>
+    <div class="focus-pill">
+      <span class="focus-label">Focus →</span>
+      <input type="text" id="focus-text" placeholder="What&#39;s the priority today?" maxlength="90">
+    </div>
+    <div style="display:flex;align-items:center;gap:16px;">
+      <span id="dateline">Wednesday 25 Feb 2026</span>
+      <span id="clock">11:56:44</span>
+    </div>
+  </header>
+
+  <!-- MAIN -->
+  <main class="main">
+
+    <!-- LEFT: Calendar -->
+    <div class="col">
+      <div class="col-header">
+        <span class="col-title">Calendar</span>
+        <div class="cal-toggle">
+          <button class="cal-btn active" onclick="setView(&#39;day&#39;,this)">Day</button>
+          <button class="cal-btn" onclick="setView(&#39;week&#39;,this)">Week</button>
+          <button class="cal-btn" onclick="setView(&#39;month&#39;,this)">Month</button>
+        </div>
+      </div>
+      <div class="col-body">
+        <div class="cal-body">
+          <!-- Mini calendar -->
+          <div class="mini-cal">
+            <div class="mini-cal-header">
+              <span class="mini-cal-month" id="mini-month">February 2026</span>
+              <div class="mini-cal-nav">
+                <button onclick="navMonth(-1)">‹</button>
+                <button onclick="navMonth(1)">›</button>
+              </div>
+            </div>
+            <div class="mini-cal-grid">
+              <div class="mini-cal-days" id="mini-day-labels"><div class="mini-cal-day-label">Mo</div><div class="mini-cal-day-label">Tu</div><div class="mini-cal-day-label">We</div><div class="mini-cal-day-label">Th</div><div class="mini-cal-day-label">Fr</div><div class="mini-cal-day-label">Sa</div><div class="mini-cal-day-label">Su</div></div>
+              <div class="mini-cal-dates" id="mini-dates"><div class="cal-date other-month">26</div><div class="cal-date other-month">27</div><div class="cal-date other-month">28</div><div class="cal-date other-month">29</div><div class="cal-date other-month">30</div><div class="cal-date other-month">31</div><div class="cal-date" onclick="selectDate(2026,1,1)">1</div><div class="cal-date has-events" onclick="selectDate(2026,1,2)">2</div><div class="cal-date has-events" onclick="selectDate(2026,1,3)">3</div><div class="cal-date has-events" onclick="selectDate(2026,1,4)">4</div><div class="cal-date has-events" onclick="selectDate(2026,1,5)">5</div><div class="cal-date has-events" onclick="selectDate(2026,1,6)">6</div><div class="cal-date has-events" onclick="selectDate(2026,1,7)">7</div><div class="cal-date has-events" onclick="selectDate(2026,1,8)">8</div><div class="cal-date" onclick="selectDate(2026,1,9)">9</div><div class="cal-date" onclick="selectDate(2026,1,10)">10</div><div class="cal-date" onclick="selectDate(2026,1,11)">11</div><div class="cal-date" onclick="selectDate(2026,1,12)">12</div><div class="cal-date" onclick="selectDate(2026,1,13)">13</div><div class="cal-date" onclick="selectDate(2026,1,14)">14</div><div class="cal-date" onclick="selectDate(2026,1,15)">15</div><div class="cal-date" onclick="selectDate(2026,1,16)">16</div><div class="cal-date" onclick="selectDate(2026,1,17)">17</div><div class="cal-date" onclick="selectDate(2026,1,18)">18</div><div class="cal-date" onclick="selectDate(2026,1,19)">19</div><div class="cal-date" onclick="selectDate(2026,1,20)">20</div><div class="cal-date has-events" onclick="selectDate(2026,1,21)">21</div><div class="cal-date" onclick="selectDate(2026,1,22)">22</div><div class="cal-date has-events" onclick="selectDate(2026,1,23)">23</div><div class="cal-date has-events" onclick="selectDate(2026,1,24)">24</div><div class="cal-date today has-events" onclick="selectDate(2026,1,25)">25</div><div class="cal-date has-events" onclick="selectDate(2026,1,26)">26</div><div class="cal-date has-events" onclick="selectDate(2026,1,27)">27</div><div class="cal-date has-events" onclick="selectDate(2026,1,28)">28</div><div class="cal-date other-month">1</div></div>
+            </div>
+          </div>
+
+          <!-- Events for selected day/week -->
+          <p class="events-section-label" id="events-label">Today's events</p>
+          <div id="events-list"><div class="event-item cal1 ">
+    <div class="event-time">06:15</div>
+    <div class="event-name">gym / run</div>
+  </div><div class="event-item cal1 ">
+    <div class="event-time">07:30</div>
+    <div class="event-name">luca school run</div>
+  </div><div class="event-item cal1 ">
+    <div class="event-time">09:00</div>
+    <div class="event-name">nomp</div>
+  </div><div class="event-item cal1 ">
+    <div class="event-time">11:30</div>
+    <div class="event-name">the bear</div>
+  </div><div class="event-item cal1 ">
+    <div class="event-time">18:00</div>
+    <div class="event-name">airport run mw</div>
+  </div><div class="event-item cal1 ">
+    <div class="event-time">21:15</div>
+    <div class="event-name">gym / run</div>
+  </div></div>
+
+          <a href="https://calendar.google.com/calendar/r" target="_blank" class="cal-open-link">
+            Open Google Calendar ↗
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <!-- CENTRE: Documents -->
+    <div class="col">
+      <div class="col-header">
+        <span class="col-title">Documents</span>
+      </div>
+      <div class="sheet-tabs" id="sheet-tabs"><button class="sheet-tab active">GTM Overview</button><button class="sheet-tab">Mission Control</button><button class="sheet-tab">Biz Dev</button><button class="sheet-tab">Cohorts</button><button class="sheet-tab">Timeline</button></div>
+      <div class="sheet-content" id="sheet-content"><div class="sheet-pane visible"><div class="sheet-icon">📊</div><div class="sheet-name">GTM Overview</div><p class="sheet-desc">Quick reference overview of the full GTM strategy.</p><a href="https://docs.google.com/spreadsheets/d/1mWwnAv2dv9ycRE8njUZ8QY5XH6iVzNdnKKrD7CIZIuQ/edit?gid=0#gid=0" target="_blank" class="sheet-open-link">Open in Google Sheets ↗</a></div><div class="sheet-pane"><div class="sheet-icon">📊</div><div class="sheet-name">Mission Control</div><p class="sheet-desc">Content strategy and actionable task management hub.</p><a href="https://docs.google.com/spreadsheets/d/1YDCEjmPZanFeXTYg-GlJGFVRMSc3UZWN/edit?gid=237830561#gid=237830561" target="_blank" class="sheet-open-link">Open in Google Sheets ↗</a></div><div class="sheet-pane"><div class="sheet-icon">📊</div><div class="sheet-name">Biz Dev</div><p class="sheet-desc">Business development contacts — influencers, prosumers and partners.</p><a href="https://docs.google.com/spreadsheets/d/1HnBjJDjUOcgcik1sgQrP5c7XCS3ifPFk/edit?gid=983834833#gid=983834833" target="_blank" class="sheet-open-link">Open in Google Sheets ↗</a></div><div class="sheet-pane"><div class="sheet-icon">📊</div><div class="sheet-name">Cohorts</div><p class="sheet-desc">Universities, companies and running clubs for nomp partnership outreach.</p><a href="https://docs.google.com/spreadsheets/d/1feVL0SKZtuP8MjqwmlfWzmRc-WIAhcLZ/edit?gid=1999948096#gid=1999948096" target="_blank" class="sheet-open-link">Open in Google Sheets ↗</a></div><div class="sheet-pane"><div class="sheet-icon">📊</div><div class="sheet-name">Timeline</div><p class="sheet-desc">Project timeline — work in progress, for reference.</p><a href="https://docs.google.com/spreadsheets/d/1F8WQyeXqUOlAbDszLzxovOMPlZ5b2o_usPUNCb4Gmgk/edit?gid=1709744959#gid=1709744959" target="_blank" class="sheet-open-link">Open in Google Sheets ↗</a></div></div>
+    </div>
+
+    <!-- RIGHT: Agent Output -->
+    <div class="col">
+      <div class="col-header">
+        <span class="col-title">Agent Output</span>
+        <div class="agent-status">
+          <div class="status-dot ready"></div>
+          <span class="status-label">Ready</span>
+        </div>
+      </div>
+      <div class="col-body">
+        <div class="agent-body">
+          <a href="https://app.attio.com/wise-eyes-open/home" target="_blank" class="attio-card">
+            <div class="attio-icon-box">A</div>
+            <span class="attio-name">Attio CRM</span>
+            <span class="attio-sub">Open ↗</span>
+          </a>
+          <div class="agent-card">
+            <div class="agent-card-header">
+              <span class="agent-card-title">Morning Briefing</span>
+              <span class="badge grey" id="briefing-badge">Pending</span>
+            </div>
+            <div class="agent-card-body" id="briefing-body">
+              <div class="empty-state">
+                <div class="ei">⚡</div>
+                <p>Today's briefing will appear here<br>once Make.com runs at 5am.<br><br>Or paste a doc link to pin it.</p>
+              </div>
+              <input class="briefing-input" id="briefing-url" placeholder="Paste briefing doc link and press Enter…" onkeydown="if(event.key===&#39;Enter&#39;){pinBriefing(this.value)}">
+            </div>
+          </div>
+          <div class="agent-card">
+            <div class="agent-card-header">
+              <span class="agent-card-title">Content Drafts</span>
+              <span class="badge purple">0 ready</span>
+            </div>
+            <div class="agent-card-body">
+              <div class="empty-state"><p>Blog drafts, social post options<br>and newsletter sections will<br>appear here each morning.</p></div>
+            </div>
+          </div>
+          <div class="agent-card">
+            <div class="agent-card-header">
+              <span class="agent-card-title">Outreach Queue</span>
+              <span class="badge teal">0 drafted</span>
+            </div>
+            <div class="agent-card-body">
+              <div class="empty-state"><p>Prepared outreach messages<br>ready for your review<br>before sending.</p></div>
+            </div>
+          </div>
+          <div class="agent-card">
+            <div class="agent-card-header"><span class="agent-card-title">Day Notes</span></div>
+            <div class="agent-card-body">
+              <textarea id="day-notes" class="notes-area" placeholder="Notes, decisions, blockers…"></textarea>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- BOTTOM STRIP -->
+  <footer class="bottombar">
+    <span class="bar-label">Sites</span>
+    <a href="https://www.nomp.ch/" target="_blank" class="chip t"><div class="dot"></div>nomp.ch</a>
+    <a href="https://www.wiseeyesopen.com/" target="_blank" class="chip p"><div class="dot"></div>WEO</a>
+    <div class="sep"></div>
+    <span class="bar-label">nomp</span>
+    <a href="https://www.facebook.com/profile.php?id=61578211947144" target="_blank" class="chip t"><div class="dot"></div>Facebook</a>
+    <a href="file:///C:/Users/iains/Downloads/dashboard_2.html#" class="chip t dim"><div class="dot"></div>Instagram</a>
+    <div class="sep"></div>
+    <span class="bar-label">WEO</span>
+    <a href="https://www.facebook.com/wiseeyesopen/" target="_blank" class="chip p"><div class="dot"></div>Facebook</a>
+    <a href="file:///C:/Users/iains/Downloads/dashboard_2.html#" class="chip p dim"><div class="dot"></div>Instagram</a>
+    <a href="https://x.com/Ianwiseeyesopen" target="_blank" class="chip p"><div class="dot"></div>X</a>
+    <a href="file:///C:/Users/iains/Downloads/dashboard_2.html#" class="chip p dim"><div class="dot"></div>LinkedIn</a>
+    <div class="sep"></div>
+    <a href="https://app.attio.com/wise-eyes-open/home" target="_blank" class="chip p"><div class="dot"></div>Attio</a>
+  </footer>
+</div>
+
+<script>
+// ── CONFIG ──
+const API_KEY = 'AIzaSyD80mOMR03-e5Rq4g2TYBKMBl9u5IiDqVI';
+const CALENDARS = [
+  { id: 'iainswise@gmail.com',                                                                          color: 'cal1', label: 'Main' },
+  { id: '834f67a3cdf3f59449839677230897aed3642630c10c8f87be699c0ae466008c@group.calendar.google.com',  color: 'cal2', label: 'Cal 2' },
+  { id: '43c936510a66711f99062eab2ce4e630e351252b8316be5536d8a9ad077f3304@group.calendar.google.com',  color: 'cal3', label: 'Cal 3' }
+];
+
+// ── CLOCK ──
+function tick() {
+  const n = new Date(), p = v => String(v).padStart(2,'0');
+  document.getElementById('clock').textContent = `${p(n.getHours())}:${p(n.getMinutes())}:${p(n.getSeconds())}`;
+  const days=['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+  const months=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  document.getElementById('dateline').textContent = `${days[n.getDay()]} ${n.getDate()} ${months[n.getMonth()]} ${n.getFullYear()}`;
+}
+setInterval(tick,1000); tick();
+
+// ── CALENDAR STATE ──
+const today = new Date();
+let viewDate = new Date(today);
+let selectedDate = new Date(today);
+let currentView = 'day';
+let allEvents = [];
+
+// ── MINI CALENDAR ──
+const MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+const DAY_LABELS = ['Mo','Tu','We','Th','Fr','Sa','Su'];
+
+function renderMiniCal() {
+  const y = viewDate.getFullYear(), m = viewDate.getMonth();
+  document.getElementById('mini-month').textContent = `${MONTHS[m]} ${y}`;
+
+  const labelsEl = document.getElementById('mini-day-labels');
+  labelsEl.innerHTML = DAY_LABELS.map(d => `<div class="mini-cal-day-label">${d}</div>`).join('');
+
+  const first = new Date(y, m, 1);
+  let startDay = first.getDay() - 1; // Mon = 0
+  if (startDay < 0) startDay = 6;
+  const daysInMonth = new Date(y, m+1, 0).getDate();
+  const daysInPrev = new Date(y, m, 0).getDate();
+
+  const datesEl = document.getElementById('mini-dates');
+  datesEl.innerHTML = '';
+
+  // Previous month padding
+  for (let i = startDay - 1; i >= 0; i--) {
+    const d = daysInPrev - i;
+    datesEl.innerHTML += `<div class="cal-date other-month">${d}</div>`;
+  }
+
+  // Current month
+  for (let d = 1; d <= daysInMonth; d++) {
+    const date = new Date(y, m, d);
+    const isToday = sameDay(date, today);
+    const isSel = sameDay(date, selectedDate);
+    const hasEv = allEvents.some(e => {
+      const ed = new Date(e.start.dateTime || e.start.date);
+      return sameDay(ed, date);
+    });
+    const cls = ['cal-date',
+      isToday ? 'today' : '',
+      isSel && !isToday ? 'selected' : '',
+      hasEv ? 'has-events' : '',
+    ].filter(Boolean).join(' ');
+    datesEl.innerHTML += `<div class="${cls}" onclick="selectDate(${y},${m},${d})">${d}</div>`;
+  }
+
+  // Next month padding
+  const total = startDay + daysInMonth;
+  const remaining = total % 7 === 0 ? 0 : 7 - (total % 7);
+  for (let d = 1; d <= remaining; d++) {
+    datesEl.innerHTML += `<div class="cal-date other-month">${d}</div>`;
+  }
+}
+
+function sameDay(a, b) {
+  return a.getFullYear()===b.getFullYear() && a.getMonth()===b.getMonth() && a.getDate()===b.getDate();
+}
+
+function navMonth(dir) {
+  viewDate.setMonth(viewDate.getMonth() + dir);
+  renderMiniCal();
+}
+
+function selectDate(y, m, d) {
+  selectedDate = new Date(y, m, d);
+  viewDate = new Date(y, m, d);
+  renderMiniCal();
+  renderEvents();
+}
+
+// ── FETCH EVENTS ──
+async function fetchCalendarEvents() {
+  const now = new Date();
+  const timeMin = new Date(now.getFullYear(), now.getMonth(), 1).toISOString();
+  const timeMax = new Date(now.getFullYear(), now.getMonth() + 2, 0).toISOString();
+
+  allEvents = [];
+
+  for (let i = 0; i < CALENDARS.length; i++) {
+    const cal = CALENDARS[i];
+    const url = `https://www.googleapis.com/calendar/v3/calendars/${encodeURIComponent(cal.id)}/events?key=${API_KEY}&timeMin=${timeMin}&timeMax=${timeMax}&singleEvents=true&orderBy=startTime&maxResults=100`;
+    try {
+      const res = await fetch(url);
+      if (!res.ok) {
+        console.warn(`Calendar ${cal.id} returned ${res.status}`);
+        continue;
+      }
+      const data = await res.json();
+      if (data.items) {
+        data.items.forEach(ev => { ev._calColor = cal.color; ev._calLabel = cal.label; });
+        allEvents = allEvents.concat(data.items);
+      }
+    } catch(e) {
+      console.warn('Failed to fetch calendar:', cal.id, e);
+    }
+  }
+
+  renderMiniCal();
+  renderEvents();
+}
+
+// ── RENDER EVENTS ──
+function setView(view, btn) {
+  currentView = view;
+  document.querySelectorAll('.cal-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  renderEvents();
+}
+
+function renderEvents() {
+  const el = document.getElementById('events-list');
+  const labelEl = document.getElementById('events-label');
+  let events = [];
+  let label = '';
+  let groupByDay = false;
+  let dateRange = [];
+
+  if (currentView === 'day') {
+    label = sameDay(selectedDate, today) ? "Today's events" : selectedDate.toLocaleDateString('en-GB',{weekday:'long', day:'numeric', month:'short'});
+    events = allEvents.filter(e => sameDay(new Date(e.start.dateTime || e.start.date), selectedDate));
+
+  } else if (currentView === 'week') {
+    const weekStart = new Date(selectedDate);
+    const day = weekStart.getDay();
+    weekStart.setDate(weekStart.getDate() + (day === 0 ? -6 : 1 - day));
+    const weekEnd = new Date(weekStart); weekEnd.setDate(weekEnd.getDate() + 6);
+    label = `Week of ${weekStart.toLocaleDateString('en-GB',{day:'numeric',month:'short'})}`;
+    groupByDay = true;
+    for (let i = 0; i < 7; i++) {
+      const d = new Date(weekStart); d.setDate(d.getDate() + i);
+      dateRange.push(d);
+    }
+    events = allEvents.filter(e => {
+      const d = new Date(e.start.dateTime || e.start.date);
+      return d >= weekStart && d <= new Date(weekEnd.getFullYear(), weekEnd.getMonth(), weekEnd.getDate(), 23, 59, 59);
+    });
+
+  } else {
+    const y = selectedDate.getFullYear(), m = selectedDate.getMonth();
+    const daysInMonth = new Date(y, m+1, 0).getDate();
+    label = `${MONTHS[m]} overview`;
+    groupByDay = true;
+    for (let i = 1; i <= daysInMonth; i++) dateRange.push(new Date(y, m, i));
+    events = allEvents.filter(e => {
+      const d = new Date(e.start.dateTime || e.start.date);
+      return d.getMonth() === m && d.getFullYear() === y;
+    });
+  }
+
+  labelEl.textContent = label;
+
+  if (!groupByDay) {
+    // Day view — simple list
+    events.sort((a,b) => new Date(a.start.dateTime||a.start.date) - new Date(b.start.dateTime||b.start.date));
+    if (events.length === 0) { el.innerHTML = `<div class="event-empty">No events</div>`; return; }
+    el.innerHTML = events.map(e => eventHTML(e)).join('');
+    return;
+  }
+
+  // Week/Month view — group by day, only show days that have events
+  const daysWithEvents = dateRange.filter(d => events.some(e => sameDay(new Date(e.start.dateTime||e.start.date), d)));
+
+  if (daysWithEvents.length === 0) { el.innerHTML = `<div class="event-empty">No events</div>`; return; }
+
+  el.innerHTML = daysWithEvents.map(d => {
+    const isToday = sameDay(d, today);
+    const dayLabel = d.toLocaleDateString('en-GB', {weekday:'short', day:'numeric', month:'short'});
+    const dayEvents = events
+      .filter(e => sameDay(new Date(e.start.dateTime||e.start.date), d))
+      .sort((a,b) => new Date(a.start.dateTime||a.start.date) - new Date(b.start.dateTime||b.start.date));
+
+    return `<div style="margin-bottom:10px;">
+      <div style="font-family:'DM Mono',monospace;font-size:9px;font-weight:600;text-transform:uppercase;letter-spacing:0.08em;color:${isToday ? 'var(--teal)' : 'var(--muted)'};margin-bottom:5px;padding-left:2px;">${isToday ? '▶ Today · ' : ''}${dayLabel}</div>
+      ${dayEvents.map(e => eventHTML(e)).join('')}
+    </div>`;
+  }).join('');
+}
+
+function eventHTML(e) {
+  const isAllDay = !e.start.dateTime;
+  const timeStr = isAllDay ? 'All day' : new Date(e.start.dateTime).toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'});
+  return `<div class="event-item ${e._calColor} ${isAllDay?'allday':''}">
+    <div class="event-time">${timeStr}</div>
+    <div class="event-name">${e.summary||'(No title)'}</div>
+  </div>`;
+}
+
+// ── SHEETS ──
+const SHEETS = [
+  { label:'GTM Overview',    url:'https://docs.google.com/spreadsheets/d/1mWwnAv2dv9ycRE8njUZ8QY5XH6iVzNdnKKrD7CIZIuQ/edit?gid=0#gid=0',           desc:'Quick reference overview of the full GTM strategy.' },
+  { label:'Mission Control', url:'https://docs.google.com/spreadsheets/d/1YDCEjmPZanFeXTYg-GlJGFVRMSc3UZWN/edit?gid=237830561#gid=237830561', desc:'Content strategy and actionable task management hub.' },
+  { label:'Biz Dev',         url:'https://docs.google.com/spreadsheets/d/1HnBjJDjUOcgcik1sgQrP5c7XCS3ifPFk/edit?gid=983834833#gid=983834833',  desc:'Business development contacts — influencers, prosumers and partners.' },
+  { label:'Cohorts',         url:'https://docs.google.com/spreadsheets/d/1feVL0SKZtuP8MjqwmlfWzmRc-WIAhcLZ/edit?gid=1999948096#gid=1999948096', desc:'Universities, companies and running clubs for nomp partnership outreach.' },
+  { label:'Timeline',        url:'https://docs.google.com/spreadsheets/d/1F8WQyeXqUOlAbDszLzxovOMPlZ5b2o_usPUNCb4Gmgk/edit?gid=1709744959#gid=1709744959', desc:'Project timeline — work in progress, for reference.' }
+];
+const tabsEl = document.getElementById('sheet-tabs');
+const contentEl = document.getElementById('sheet-content');
+SHEETS.forEach((s,i) => {
+  const btn = document.createElement('button');
+  btn.className = 'sheet-tab'+(i===0?' active':'');
+  btn.textContent = s.label;
+  btn.onclick = () => switchSheet(i);
+  tabsEl.appendChild(btn);
+  const pane = document.createElement('div');
+  pane.className = 'sheet-pane'+(i===0?' visible':'');
+  pane.innerHTML = `<div class="sheet-icon">📊</div><div class="sheet-name">${s.label}</div><p class="sheet-desc">${s.desc}</p><a href="${s.url}" target="_blank" class="sheet-open-link">Open in Google Sheets ↗</a>`;
+  contentEl.appendChild(pane);
+});
+function switchSheet(i) {
+  document.querySelectorAll('.sheet-tab').forEach((t,j) => t.classList.toggle('active',j===i));
+  document.querySelectorAll('.sheet-pane').forEach((p,j) => p.classList.toggle('visible',j===i));
+}
+
+// ── BRIEFING ──
+function pinBriefing(url) {
+  if (!url||!url.startsWith('http')) return;
+  document.getElementById('briefing-badge').textContent='Today';
+  document.getElementById('briefing-badge').className='badge teal';
+  document.getElementById('briefing-body').innerHTML=`<div class="output-row"><div class="odot t"></div><div><div class="output-text">Morning briefing ready</div><a href="${url}" target="_blank" class="output-link">Open briefing doc ↗</a></div></div>`;
+}
+
+// ── PERSIST ──
+const dk = new Date().toDateString();
+const fe = document.getElementById('focus-text'), ne = document.getElementById('day-notes');
+fe.value = sessionStorage.getItem('f_'+dk)||'';
+ne.value = sessionStorage.getItem('n_'+dk)||'';
+fe.addEventListener('input',()=>sessionStorage.setItem('f_'+dk,fe.value));
+ne.addEventListener('input',()=>sessionStorage.setItem('n_'+dk,ne.value));
+
+// ── INIT ──
+renderMiniCal();
+document.getElementById('events-list').innerHTML = '<div class="cal-loading">Loading your calendars…</div>';
+fetchCalendarEvents();
+</script>
+
+
+</body></html>
